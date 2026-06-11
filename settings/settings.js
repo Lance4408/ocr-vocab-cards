@@ -1,16 +1,18 @@
 // settings/settings.js
 import { getSettings, saveSettings } from "../shared/storage.js";
 import { testConnection, listModels } from "../shared/gemini.js";
-import { listEnglishVoices, speak } from "../shared/tts.js";
+import { speak } from "../shared/tts.js";
+import { setupVoiceControls } from "../shared/voiceControls.js";
 
 const $ = (id) => document.getElementById(id);
 const apiKeyEl = $("apiKey");
 const modelEl = $("model");
 const targetLangEl = $("targetLang");
-const ttsRateEl = $("ttsRate");
-const ttsVoiceEl = $("ttsVoice");
 const practiceSourceEl = $("practiceSource");
 const statusEl = $("status");
+
+// 音色與語速由共用控制即時存回 settings；其餘欄位仍按「儲存設定」存。
+let voiceCtl = { getRate: () => 1, getVoice: () => "" };
 
 function setStatus(text, kind = "info") {
   statusEl.textContent = text;
@@ -22,24 +24,8 @@ function readForm() {
     geminiApiKey: apiKeyEl.value.trim(),
     model: modelEl.value.trim() || "gemini-2.0-flash",
     targetLang: targetLangEl.value.trim() || "繁體中文",
-    ttsRate: Number(ttsRateEl.value) || 1,
-    ttsVoice: ttsVoiceEl.value,
     practiceSource: practiceSourceEl.value,
   };
-}
-
-// 把英文語音填進下拉清單，並還原已選的語音。
-async function populateVoices(selected) {
-  const voices = await listEnglishVoices();
-  for (const v of voices) {
-    const opt = document.createElement("option");
-    opt.value = v.name;
-    opt.textContent = `${v.name}（${v.lang}）`;
-    ttsVoiceEl.appendChild(opt);
-  }
-  if (selected && voices.some((v) => v.name === selected)) {
-    ttsVoiceEl.value = selected;
-  }
 }
 
 async function init() {
@@ -47,15 +33,18 @@ async function init() {
   apiKeyEl.value = s.geminiApiKey || "";
   modelEl.value = s.model || "";
   targetLangEl.value = s.targetLang || "";
-  ttsRateEl.value = String(s.ttsRate || 1);
   practiceSourceEl.value = s.practiceSource || "all";
-  await populateVoices(s.ttsVoice || "");
+  voiceCtl = await setupVoiceControls({
+    voiceEl: $("ttsVoice"),
+    rateEl: $("ttsRate"),
+    rateLabelEl: $("rateLabel"),
+  });
 }
 
 $("testVoice").addEventListener("click", () => {
   speak("This is how the reading voice sounds.", {
-    rate: Number(ttsRateEl.value) || 1,
-    voice: ttsVoiceEl.value,
+    rate: voiceCtl.getRate(),
+    voice: voiceCtl.getVoice(),
   });
 });
 

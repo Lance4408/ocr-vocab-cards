@@ -88,6 +88,12 @@ select:focus {
 .key-row select { flex: 1; }
 .key-row button { flex: 0 0 auto; }
 
+.rate-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.rate-row input[type="range"] {
+  flex: 1; width: auto; padding: 0; height: 6px; cursor: pointer; accent-color: var(--brand);
+}
+.rateval { font-size: 14px; font-weight: 600; color: var(--brand); min-width: 56px; text-align: right; }
+
 .hint {
   display: block;
   margin-top: 6px;

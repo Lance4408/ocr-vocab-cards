@@ -22,6 +22,7 @@
             <option value="sentence">來源：句子</option>
             <option value="word">來源：單字</option>
           </select>
+          <button id="openDashboard" class="ghost" type="button">進度</button>
           <button id="openSentences" class="ghost" type="button">句子島</button>
           <button id="openSettings" class="ghost" type="button">設定</button>
         </div>
@@ -35,6 +36,15 @@
           <span id="progressLabel">完成 0 / 0</span>
           <span class="tally"><span id="tallyRight">✅ 0</span>　<span id="tallyWrong">❌ 0</span></span>
         </div>
+      </section>
+
+      <section class="voicebar">
+        <span class="vb-ic">🔊 朗讀</span>
+        <select id="voiceSel" title="語音音色" aria-label="語音音色"></select>
+        <label class="vb-rate">語速
+          <input id="rateSlider" type="range" min="0.25" max="2" step="0.25" value="1" />
+          <span id="rateLabel" class="vb-rateval">1.00×</span>
+        </label>
       </section>
 
       <!-- 練習卡 -->
@@ -52,7 +62,6 @@
           <button id="reveal" class="big primary" type="button">顯示答案　<span class="kbd">空白鍵</span></button>
           <div id="graders" class="graders" hidden>
             <button id="replay" class="ghost" type="button" title="重播">🔊 重播</button>
-            <button id="slow" class="ghost" type="button" title="慢速">🐢 慢</button>
             <button id="wrong" class="big danger" type="button">❌ 再練　<span class="kbd">1</span></button>
             <button id="right" class="big ok" type="button">✅ 記得　<span class="kbd">2</span></button>
           </div>
@@ -65,6 +74,14 @@
         <h2>這一輪練完了！</h2>
         <p id="doneSummary"></p>
         <button id="again" class="big primary" type="button">再練一輪</button>
+      </section>
+
+      <!-- 今日複習已完成（有內容、但今天沒有到期的） -->
+      <section id="caughtup" class="state" hidden>
+        <div class="state-emoji">🎉</div>
+        <h2>今天的複習都完成了！</h2>
+        <p id="caughtupNext"></p>
+        <button id="goDashboard" class="big primary" type="button">看學習進度</button>
       </section>
 
       <!-- 沒有可練內容 -->

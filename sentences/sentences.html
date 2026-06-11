@@ -41,6 +41,15 @@
         </div>
       </section>
 
+      <section class="voicebar">
+        <span class="vb-ic">🔊 朗讀</span>
+        <select id="voiceSel" title="語音音色" aria-label="語音音色"></select>
+        <label class="vb-rate">語速
+          <input id="rateSlider" type="range" min="0.25" max="2" step="0.25" value="1" />
+          <span id="rateLabel" class="vb-rateval">1.00×</span>
+        </label>
+      </section>
+
       <section id="grid" class="grid"></section>
       <div id="empty" class="empty" hidden>
         <div class="empty-emoji">🏝️</div>

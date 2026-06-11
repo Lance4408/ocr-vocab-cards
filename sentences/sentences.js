@@ -9,6 +9,7 @@ import {
 } from "../shared/storage.js";
 import { fetchNaturalEN } from "../shared/gemini.js";
 import { speak, isSupported } from "../shared/tts.js";
+import { setupVoiceControls } from "../shared/voiceControls.js";
 
 const grid = document.getElementById("grid");
 const emptyEl = document.getElementById("empty");
@@ -24,9 +25,8 @@ const statusEl = document.getElementById("status");
 let allSentences = [];
 let keyword = "";
 let editingId = null;
-let settings = { ttsRate: 1, ttsVoice: "" };
-
-const SLOW_RATE = 0.6;
+let settings = {}; // 供 fetchNaturalEN 取用 API Key / 模型
+let voiceCtl = { getRate: () => 1, getVoice: () => "" };
 
 const esc = (s) =>
   String(s || "").replace(/[&<>"]/g, (m) =>
@@ -47,12 +47,12 @@ function fmtDate(ts) {
   }
 }
 
-function play(text, slow) {
+function play(text) {
   if (!isSupported()) {
     setStatus("此瀏覽器不支援朗讀。", "err");
     return;
   }
-  speak(text, { rate: slow ? SLOW_RATE : Number(settings.ttsRate) || 1, voice: settings.ttsVoice });
+  speak(text, { rate: voiceCtl.getRate(), voice: voiceCtl.getVoice() });
 }
 
 function cardHtml(s) {
@@ -77,8 +77,7 @@ function cardHtml(s) {
         <span class="date">${fmtDate(s.createdAt)}</span>
       </div>
       <div class="foot">
-        <button class="act play" data-act="play" data-id="${esc(s.id)}" title="朗讀">🔊</button>
-        <button class="act play" data-act="slow" data-id="${esc(s.id)}" title="慢速朗讀">🐢 慢</button>
+        <button class="act play" data-act="play" data-id="${esc(s.id)}" title="朗讀">🔊 朗讀</button>
         <span class="act spacer"></span>
         <button class="act" data-act="edit" data-id="${esc(s.id)}">編輯</button>
         <button class="act pin ${s.pinned ? "on" : ""}" data-act="pin" data-id="${esc(s.id)}">
@@ -147,7 +146,7 @@ translateBtn.addEventListener("click", async () => {
 
 playPreviewBtn.addEventListener("click", () => {
   const text = enPreview.value.trim();
-  if (text) play(text, false);
+  if (text) play(text);
 });
 
 enPreview.addEventListener("input", () => {
@@ -177,8 +176,8 @@ grid.addEventListener("click", async (e) => {
   const act = btn.dataset.act;
   const s = allSentences.find((x) => x.id === id);
 
-  if (act === "play" || act === "slow") {
-    if (s) play(s.en, act === "slow");
+  if (act === "play") {
+    if (s) play(s.en);
     return;
   }
   if (act === "edit") {
@@ -235,5 +234,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 (async function init() {
   settings = await getSettings();
+  voiceCtl = await setupVoiceControls({
+    voiceEl: document.getElementById("voiceSel"),
+    rateEl: document.getElementById("rateSlider"),
+    rateLabelEl: document.getElementById("rateLabel"),
+  });
   await reload();
 })();

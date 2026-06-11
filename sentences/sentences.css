@@ -108,6 +108,24 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .status.err { color: #dc2626; }
 .status.info { color: var(--muted); }
 
+/* ---- 朗讀控制列 ---- */
+.voicebar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 14px; margin-bottom: 22px;
+  font-size: 14px; color: var(--ink);
+}
+.voicebar .vb-ic { font-weight: 600; }
+.voicebar select {
+  font: inherit; font-size: 14px; padding: 7px 10px; border-radius: 9px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; outline: none;
+  max-width: 280px;
+}
+.voicebar select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+.vb-rate { display: flex; align-items: center; gap: 8px; color: var(--muted); margin-left: auto; }
+.vb-rate input[type="range"] { width: 140px; height: 6px; cursor: pointer; accent-color: var(--teal); }
+.vb-rateval { font-weight: 600; color: var(--teal); min-width: 52px; text-align: right; }
+
 /* ---- 卡片 ---- */
 .grid {
   display: grid;

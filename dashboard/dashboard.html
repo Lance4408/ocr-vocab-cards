@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>學習進度 · OCR 單字卡</title>
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo">🔥</span>
+          <div>
+            <h1>學習進度</h1>
+            <p class="count">你的 Michel 學習儀表板</p>
+          </div>
+        </div>
+        <div class="tools">
+          <button id="goPractice" class="primary" type="button">去練習</button>
+          <button id="openSentences" class="ghost" type="button">句子島</button>
+          <button id="openList" class="ghost" type="button">單字庫</button>
+          <button id="openSettings" class="ghost" type="button">設定</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="stats">
+        <div class="stat">
+          <div class="stat-num" id="streak">0</div>
+          <div class="stat-label">🔥 連續天數</div>
+          <div class="stat-sub" id="streakSub"></div>
+        </div>
+        <div class="stat due">
+          <div class="stat-num" id="due">0</div>
+          <div class="stat-label">今日待複習</div>
+          <div class="stat-sub" id="dueSub"></div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="mastered">0</div>
+          <div class="stat-label">已掌握</div>
+          <div class="stat-sub">複習 5 次以上</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>6 週進度</h3>
+        <div class="wbar"><div id="wfill" class="wbar-fill"></div></div>
+        <p id="milestone" class="milestone"></p>
+        <p id="weekMeta" class="meta"></p>
+      </section>
+
+      <section class="card">
+        <h3>最近 7 天</h3>
+        <div id="chart" class="chart"></div>
+        <p id="todayMeta" class="meta"></p>
+      </section>
+
+      <section class="card totals">
+        <span>📝 句子 <b id="totSent">0</b> 句</span>
+        <span>📚 單字 <b id="totWord">0</b> 個</span>
+      </section>
+    </main>
+
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

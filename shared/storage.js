@@ -5,6 +5,7 @@
 const WORDS_KEY = "words";
 const SENTENCES_KEY = "sentences";
 const SETTINGS_KEY = "settings";
+const ACTIVITY_KEY = "activity";
 
 export const DEFAULT_SETTINGS = {
   geminiApiKey: "",
@@ -117,6 +118,30 @@ function withSrs(item) {
   return { ...defaultSrs(), ...(item.srs || {}) };
 }
 
+// ---- 間隔複習（Leitner）工具 ----
+
+// box 索引 → 答對後隔幾天再到期。答錯一律回 box 0（當天再練）。
+const SRS_INTERVALS = [0, 1, 3, 7, 14, 30, 60];
+const MAX_BOX = SRS_INTERVALS.length - 1;
+const DAY_MS = 86400000;
+
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+function startOfTomorrow() {
+  return startOfToday() + DAY_MS;
+}
+// dueAt=0（從未練過）或 dueAt 在明天 00:00 之前 → 今天該複習。
+function isDue(srs) {
+  return ((srs && srs.dueAt) || 0) < startOfTomorrow();
+}
+// 本機日期鍵 YYYY-MM-DD（不用 locale 字串，避免格式飄移）。
+function ymd(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 // ---- 句子（句子島） ----
 
 // 取得所有句子，排序規則比照單字：置頂優先、其餘 createdAt 由新到舊。
@@ -176,20 +201,24 @@ export async function toggleSentencePin(id) {
 
 // ---- 主動回想（練習） ----
 
-// 記錄一次自評結果，更新對應集合該筆的 srs。
+// 記錄一次自評結果：升降 Leitner 箱、算下次到期日、並記錄當日學習活動。
 // kind: "word" | "sentence"；result: "right" | "wrong"
 export async function recordReview(kind, id, result) {
   const key = kind === "sentence" ? SENTENCES_KEY : WORDS_KEY;
   const list = (await storageGet(key)) || [];
+  const right = result === "right";
   const next = list.map((it) => {
     if (it.id !== id) return it;
     const srs = withSrs(it);
-    srs.lastResult = result === "right" ? "right" : "wrong";
+    srs.box = right ? Math.min((srs.box || 0) + 1, MAX_BOX) : 0;
+    if (!right) srs.wrong = (srs.wrong || 0) + 1;
+    srs.lastResult = right ? "right" : "wrong";
     srs.lastReviewed = Date.now();
-    if (result !== "right") srs.wrong = (srs.wrong || 0) + 1;
+    srs.dueAt = startOfToday() + SRS_INTERVALS[srs.box] * DAY_MS;
     return { ...it, srs };
   });
   await storageSet({ [key]: next });
+  await bumpActivity(right);
 }
 
 // 排序：上次答錯者優先 → 累積錯越多越優先 → 最久沒複習（含從未練過）優先。
@@ -203,8 +232,9 @@ function reviewCompare(a, b) {
 
 // 合併句子與單字成統一的複習佇列。
 // source: "sentence" | "word" | "all"
+// dueOnly: 預設 true，只回傳今天該複習（到期或從未練過）的項目。
 // 回傳項目：{ kind, id, front(中), back(英), playText(英), srs, extra }
-export async function getReviewQueue({ source = "all" } = {}) {
+export async function getReviewQueue({ source = "all", dueOnly = true } = {}) {
   const items = [];
 
   if (source === "sentence" || source === "all") {
@@ -243,6 +273,116 @@ export async function getReviewQueue({ source = "all" } = {}) {
     }
   }
 
-  items.sort(reviewCompare);
-  return items;
+  const filtered = dueOnly ? items.filter((it) => isDue(it.srs)) : items;
+  filtered.sort(reviewCompare);
+  return filtered;
+}
+
+// ---- 學習活動與儀表板 ----
+
+const MILESTONES = [
+  "第 1 週：撐過摩擦期，Excel 滿江紅是正常的，學習正在發生。",
+  "第 2 週：開始記得 20–30%，出現愈來愈多打勾的句子。",
+  "第 3 週：鏈接時刻，突然有句子能脫口而出，信心大增。",
+  "第 4 週：能用庫存句子做簡單的一問一答。",
+  "第 5 週：句子變靈活，開始能自由組合、替換。",
+  "第 6 週：能真正用這語言思考與溝通。",
+];
+
+export async function getActivity() {
+  return (await storageGet(ACTIVITY_KEY)) || { startDate: "", days: {} };
+}
+
+// 記錄今天的一次複習（reviews +1、答對則 right +1），並在首次練習時設起始日。
+async function bumpActivity(right) {
+  const act = await getActivity();
+  if (!act.days) act.days = {};
+  const today = ymd(new Date());
+  if (!act.startDate) act.startDate = today;
+  const rec = act.days[today] || { reviews: 0, right: 0 };
+  rec.reviews += 1;
+  if (right) rec.right += 1;
+  act.days[today] = rec;
+  await storageSet({ [ACTIVITY_KEY]: act });
+}
+
+// 一次算好儀表板要的所有數據，讓 dashboard.js 只負責填畫面。
+export async function getDashboardData() {
+  const sentences = (await storageGet(SENTENCES_KEY)) || [];
+  const words = (await storageGet(WORDS_KEY)) || [];
+  const act = await getActivity();
+  const days = act.days || {};
+
+  // 句子 + 單字的彙總：已掌握數、今日到期數、下一個到期時間。
+  let masteredCount = 0;
+  let dueToday = 0;
+  let nextDueAt = null;
+  for (const it of [...sentences, ...words]) {
+    const srs = withSrs(it);
+    if ((srs.box || 0) >= 5) masteredCount++;
+    if (isDue(srs)) {
+      dueToday++;
+    } else if (srs.dueAt && (nextDueAt === null || srs.dueAt < nextDueAt)) {
+      nextDueAt = srs.dueAt;
+    }
+  }
+
+  // 今日活動與連續天數（streak）。
+  const todayRec = days[ymd(new Date())] || { reviews: 0, right: 0 };
+  const studiedToday = todayRec.reviews > 0;
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!studiedToday) cursor.setDate(cursor.getDate() - 1); // 今天還沒練，從昨天起算既有連續
+  while (true) {
+    const k = ymd(cursor);
+    if (days[k] && days[k].reviews > 0) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // 最近 7 天（舊→新）。
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const dd = new Date();
+    dd.setHours(0, 0, 0, 0);
+    dd.setDate(dd.getDate() - i);
+    const k = ymd(dd);
+    last7.push({ date: k, reviews: (days[k] && days[k].reviews) || 0 });
+  }
+
+  // 6 週進度。
+  let daysSinceStart = 0;
+  let week = 0;
+  let progressPct = 0;
+  let milestone = "";
+  if (act.startDate) {
+    const [y, m, dnum] = act.startDate.split("-").map(Number);
+    const startMs = new Date(y, m - 1, dnum).setHours(0, 0, 0, 0);
+    daysSinceStart = Math.floor((startOfToday() - startMs) / DAY_MS) + 1;
+    week = Math.max(1, Math.ceil(daysSinceStart / 7));
+    progressPct = Math.min((daysSinceStart / 42) * 100, 100);
+    milestone = MILESTONES[Math.min(week, MILESTONES.length) - 1];
+  }
+
+  return {
+    totalSentences: sentences.length,
+    totalWords: words.length,
+    masteredCount,
+    dueToday,
+    nextDueAt,
+    streak,
+    studiedToday,
+    todayReviews: todayRec.reviews,
+    todayRight: todayRec.right,
+    last7,
+    startDate: act.startDate || "",
+    daysSinceStart,
+    week,
+    milestone,
+    progressPct,
+  };
 }
