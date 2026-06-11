@@ -55,6 +55,13 @@ body {
   background: #fff;
 }
 #search:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+#sort {
+  font: inherit; font-size: 14px; cursor: pointer;
+  padding: 9px 13px; border-radius: 10px;
+  border: 1px solid var(--line); background: #fff; color: var(--ink);
+  outline: none;
+}
+#sort:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
 .ghost {
   font: inherit; font-size: 14px; cursor: pointer;
   padding: 9px 16px; border-radius: 10px;

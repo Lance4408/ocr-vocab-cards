@@ -5,9 +5,13 @@ const grid = document.getElementById("grid");
 const emptyEl = document.getElementById("empty");
 const countEl = document.getElementById("count");
 const searchEl = document.getElementById("search");
+const sortEl = document.getElementById("sort");
 
 let allWords = [];
 let keyword = "";
+// 排序方式：date（建立日期，新→舊）/ alpha（字母順序）/ random（隨機）
+let sortMode = localStorage.getItem("ocr_sort_mode") || "date";
+let randKey = new Map(); // id -> 隨機值，讓隨機順序在重繪之間維持穩定
 
 const esc = (s) =>
   String(s || "").replace(/[&<>"]/g, (m) =>
@@ -64,8 +68,39 @@ function applyFilter(list) {
   );
 }
 
+function ensureRandomKeys(list) {
+  list.forEach((w) => {
+    if (!randKey.has(w.id)) randKey.set(w.id, Math.random());
+  });
+}
+function reshuffle(list) {
+  randKey = new Map();
+  list.forEach((w) => randKey.set(w.id, Math.random()));
+}
+
+function compareBy(a, b) {
+  if (sortMode === "alpha") {
+    return (a.word || "").localeCompare(b.word || "", "en", { sensitivity: "base" });
+  }
+  if (sortMode === "random") {
+    return (randKey.get(a.id) || 0) - (randKey.get(b.id) || 0);
+  }
+  // date：建立日期由新到舊
+  return (b.createdAt || 0) - (a.createdAt || 0);
+}
+
+// 置頂卡片永遠固定在最前、不受排序方式影響；只有非置頂卡片才套用選定排序。
+function applySort(list) {
+  if (sortMode === "random") ensureRandomKeys(list);
+  const pinned = list
+    .filter((w) => w.pinned)
+    .sort((a, b) => (b.pinnedAt || b.createdAt || 0) - (a.pinnedAt || a.createdAt || 0));
+  const rest = list.filter((w) => !w.pinned).sort(compareBy);
+  return pinned.concat(rest);
+}
+
 function render() {
-  const filtered = applyFilter(allWords);
+  const filtered = applySort(applyFilter(allWords));
   countEl.textContent = `共 ${allWords.length} 個單字`;
 
   if (allWords.length === 0) {
@@ -102,6 +137,15 @@ grid.addEventListener("click", async (e) => {
 
 searchEl.addEventListener("input", () => {
   keyword = searchEl.value.trim();
+  render();
+});
+
+// 還原上次選的排序方式，並監聽切換。
+sortEl.value = sortMode;
+sortEl.addEventListener("change", () => {
+  sortMode = sortEl.value;
+  localStorage.setItem("ocr_sort_mode", sortMode);
+  if (sortMode === "random") reshuffle(allWords); // 每次選「隨機」重新洗牌
   render();
 });
 
