@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>我的單字庫 · OCR 單字卡</title>
+    <link rel="stylesheet" href="wordlist.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo">語</span>
+          <div>
+            <h1>我的單字庫</h1>
+            <p id="count" class="count">共 0 個單字</p>
+          </div>
+        </div>
+        <div class="tools">
+          <input id="search" type="search" placeholder="搜尋單字或翻譯…" autocomplete="off" />
+          <button id="openSettings" class="ghost" type="button">設定</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section id="grid" class="grid"></section>
+      <div id="empty" class="empty" hidden>
+        <div class="empty-emoji">📖</div>
+        <h2>單字庫還是空的</h2>
+        <p>到任何網頁按下快捷鍵 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>，<br />拖曳框選英文單字，就會自動收錄到這裡。</p>
+      </div>
+    </main>
+
+    <script type="module" src="wordlist.js"></script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OCR 單字卡 · 設定</title>
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="head">
+        <h1>設定</h1>
+        <p class="sub">設定 Gemini API，OCR 辨識到的單字會由它產生翻譯與例句。</p>
+      </header>
+
+      <section class="card">
+        <label class="field">
+          <span class="label">Gemini API Key</span>
+          <div class="key-row">
+            <input id="apiKey" type="password" placeholder="貼上你的 API Key" autocomplete="off" spellcheck="false" />
+            <button id="toggleKey" type="button" class="ghost" title="顯示 / 隱藏">顯示</button>
+          </div>
+          <span class="hint">
+            可於 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Google AI Studio</a> 取得免費 API Key。
+          </span>
+        </label>
+
+        <label class="field">
+          <span class="label">模型名稱</span>
+          <div class="key-row">
+            <input id="model" type="text" placeholder="gemini-2.0-flash" spellcheck="false" list="modelList" />
+            <button id="listModels" type="button" class="ghost">列出可用</button>
+          </div>
+          <datalist id="modelList"></datalist>
+          <span class="hint">預設 gemini-2.0-flash。若出現 429 配額（limit: 0），改試 gemini-1.5-flash，或先按「列出可用」查看你的金鑰能用哪些模型。</span>
+        </label>
+
+        <label class="field">
+          <span class="label">翻譯目標語言</span>
+          <input id="targetLang" type="text" placeholder="繁體中文" spellcheck="false" />
+          <span class="hint">例如：繁體中文、简体中文、日本語。</span>
+        </label>
+
+        <div class="actions">
+          <button id="save" class="primary" type="button">儲存設定</button>
+          <button id="test" class="secondary" type="button">測試連線</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+      </section>
+
+      <p class="note">
+        API Key 只儲存在你瀏覽器的本機儲存空間（chrome.storage.local），不會上傳到任何第三方伺服器。
+      </p>
+    </main>
+    <script type="module" src="settings.js"></script>
+  </body>
+</html>

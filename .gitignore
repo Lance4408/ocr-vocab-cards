@@ -1,0 +1,14 @@
+# Claude Code 本機設定（個人工具設定，不需公開）
+.claude/
+
+# 作業系統雜項
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 編輯器設定
+.vscode/
+.idea/
+
+# 相依套件（本專案無建置流程，保留此行以防未來加入）
+node_modules/
