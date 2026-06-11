@@ -67,8 +67,26 @@ input:focus {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit; font-size: 14px;
+  color: var(--ink);
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+}
+select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 .key-row { display: flex; gap: 8px; }
-.key-row input { flex: 1; }
+.key-row input,
+.key-row select { flex: 1; }
+.key-row button { flex: 0 0 auto; }
 
 .hint {
   display: block;

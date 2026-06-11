@@ -41,6 +41,33 @@
           <span class="hint">例如：繁體中文、简体中文、日本語。</span>
         </label>
 
+        <label class="field">
+          <span class="label">朗讀語速與語音</span>
+          <div class="key-row">
+            <select id="ttsRate" title="語速">
+              <option value="0.7">語速：慢 0.7×</option>
+              <option value="0.85">語速：稍慢 0.85×</option>
+              <option value="1">語速：正常 1×</option>
+              <option value="1.15">語速：稍快 1.15×</option>
+            </select>
+            <select id="ttsVoice" title="英文語音">
+              <option value="">（系統預設語音）</option>
+            </select>
+            <button id="testVoice" type="button" class="ghost">🔊 試聽</button>
+          </div>
+          <span class="hint">用於句子島與練習頁的朗讀（瀏覽器內建語音，免額度）。語音清單來自作業系統的英文語音。</span>
+        </label>
+
+        <label class="field">
+          <span class="label">練習預設來源</span>
+          <select id="practiceSource">
+            <option value="all">全部（句子 + 單字）</option>
+            <option value="sentence">只練句子</option>
+            <option value="word">只練單字</option>
+          </select>
+          <span class="hint">開啟練習頁時預設要回想的內容；練習頁仍可隨時切換。</span>
+        </label>
+
         <div class="actions">
           <button id="save" class="primary" type="button">儲存設定</button>
           <button id="test" class="secondary" type="button">測試連線</button>

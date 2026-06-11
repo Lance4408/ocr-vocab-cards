@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>句子島 · OCR 單字卡</title>
+    <link rel="stylesheet" href="sentences.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo">島</span>
+          <div>
+            <h1>句子島</h1>
+            <p id="count" class="count">共 0 句</p>
+          </div>
+        </div>
+        <div class="tools">
+          <input id="search" type="search" placeholder="搜尋中文或英文…" autocomplete="off" />
+          <button id="openPractice" class="ghost" type="button">開始練習</button>
+          <button id="openSettings" class="ghost" type="button">設定</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- 新增句子：打中文 → AI 轉自然英文 → 儲存 -->
+      <section class="composer">
+        <div class="composer-row">
+          <textarea id="zhInput" rows="2" placeholder="用中文打一句你生活中真的會說的話，例如：這個週末你有空嗎？"></textarea>
+        </div>
+        <div class="composer-row">
+          <textarea id="enPreview" rows="2" placeholder="AI 轉出的自然英文會出現在這裡，可手動微調…"></textarea>
+        </div>
+        <div class="composer-actions">
+          <button id="translate" class="primary" type="button">AI 轉英文</button>
+          <button id="playPreview" class="ghost" type="button" title="試聽">🔊 試聽</button>
+          <button id="save" class="ok" type="button" disabled>儲存到句子島</button>
+          <span id="status" class="status" role="status"></span>
+        </div>
+      </section>
+
+      <section id="grid" class="grid"></section>
+      <div id="empty" class="empty" hidden>
+        <div class="empty-emoji">🏝️</div>
+        <h2>句子島還是空的</h2>
+        <p>在上方打一句你會說的中文，按「AI 轉英文」，<br />就能建立你的第一座句子島。</p>
+      </div>
+    </main>
+
+    <script type="module" src="sentences.js"></script>
+  </body>
+</html>

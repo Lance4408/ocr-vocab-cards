@@ -1,10 +1,10 @@
 // popup/popup.js
-document.getElementById("openList").addEventListener("click", () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("wordlist/wordlist.html") });
+function open(path) {
+  chrome.tabs.create({ url: chrome.runtime.getURL(path) });
   window.close();
-});
+}
 
-document.getElementById("openSettings").addEventListener("click", () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("settings/settings.html") });
-  window.close();
-});
+document.getElementById("openPractice").addEventListener("click", () => open("practice/practice.html"));
+document.getElementById("openSentences").addEventListener("click", () => open("sentences/sentences.html"));
+document.getElementById("openList").addEventListener("click", () => open("wordlist/wordlist.html"));
+document.getElementById("openSettings").addEventListener("click", () => open("settings/settings.html"));

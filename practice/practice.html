@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>主動回想練習 · OCR 單字卡</title>
+    <link rel="stylesheet" href="practice.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <span class="logo">練</span>
+          <div>
+            <h1>主動回想練習</h1>
+            <p class="count">看中文，先在心裡（或開口）說英文，再對答案</p>
+          </div>
+        </div>
+        <div class="tools">
+          <select id="source" title="練習來源" aria-label="練習來源">
+            <option value="all">來源：全部</option>
+            <option value="sentence">來源：句子</option>
+            <option value="word">來源：單字</option>
+          </select>
+          <button id="openSentences" class="ghost" type="button">句子島</button>
+          <button id="openSettings" class="ghost" type="button">設定</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="progress">
+        <div class="bar"><div id="barFill" class="bar-fill"></div></div>
+        <div class="progress-text">
+          <span id="progressLabel">完成 0 / 0</span>
+          <span class="tally"><span id="tallyRight">✅ 0</span>　<span id="tallyWrong">❌ 0</span></span>
+        </div>
+      </section>
+
+      <!-- 練習卡 -->
+      <section id="stage" class="stage" hidden>
+        <article class="pcard">
+          <span id="ktag" class="ktag">句子</span>
+          <div id="front" class="front"></div>
+          <div id="answer" class="answer" hidden>
+            <div id="back" class="back"></div>
+            <div id="extra" class="extra"></div>
+          </div>
+        </article>
+
+        <div class="controls">
+          <button id="reveal" class="big primary" type="button">顯示答案　<span class="kbd">空白鍵</span></button>
+          <div id="graders" class="graders" hidden>
+            <button id="replay" class="ghost" type="button" title="重播">🔊 重播</button>
+            <button id="slow" class="ghost" type="button" title="慢速">🐢 慢</button>
+            <button id="wrong" class="big danger" type="button">❌ 再練　<span class="kbd">1</span></button>
+            <button id="right" class="big ok" type="button">✅ 記得　<span class="kbd">2</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 完成 -->
+      <section id="done" class="state" hidden>
+        <div class="state-emoji">🎉</div>
+        <h2>這一輪練完了！</h2>
+        <p id="doneSummary"></p>
+        <button id="again" class="big primary" type="button">再練一輪</button>
+      </section>
+
+      <!-- 沒有可練內容 -->
+      <section id="emptyq" class="state" hidden>
+        <div class="state-emoji">🗒️</div>
+        <h2>目前沒有可練習的內容</h2>
+        <p>到<b>句子島</b>新增句子，或用 OCR 收錄單字 / 句子後再回來練習。</p>
+        <button id="goSentences" class="big primary" type="button">前往句子島</button>
+      </section>
+    </main>
+
+    <script type="module" src="practice.js"></script>
+  </body>
+</html>

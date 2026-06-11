@@ -74,6 +74,12 @@
           display: inline-block; margin-top: 10px; font-size: 11px;
           color: #16a34a; background: #f0fdf4; padding: 1px 8px; border-radius: 999px;
         }
+        .card .speak {
+          border: none; background: #ecfeff; color: #0d9488; cursor: pointer;
+          border-radius: 8px; padding: 1px 7px; font-size: 13px; margin-left: 6px;
+          vertical-align: baseline;
+        }
+        .card .speak:hover { background: #cffafe; }
         .toast {
           position: fixed; min-width: 160px; max-width: 320px;
           background: #0f172a; color: #fff; border-radius: 12px;
@@ -120,7 +126,9 @@
     overlay.className = "overlay";
     const hint = document.createElement("div");
     hint.className = "hint";
-    hint.textContent = "拖曳框選英文單字　·　Esc 取消";
+    const mode = window.__ocrMode || "word";
+    hint.textContent =
+      (mode === "sentence" ? "拖曳框選英文句子" : "拖曳框選英文單字") + "　·　Esc 取消";
     const sel = document.createElement("div");
     sel.className = "sel";
     sel.style.display = "none";
@@ -186,7 +194,22 @@
       type: "OCR_REGION_SELECTED",
       rect: r,
       dpr: window.devicePixelRatio || 1,
+      mode: window.__ocrMode || "word",
     });
+  }
+
+  // 用目標頁的 speechSynthesis 朗讀英文（純前端，不需權限）。
+  function speakEN(text) {
+    try {
+      const synth = window.speechSynthesis;
+      if (!synth || !text) return;
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(String(text));
+      u.lang = "en-US";
+      synth.speak(u);
+    } catch (_) {
+      /* 忽略 */
+    }
   }
 
   // ---- 浮卡 / 提示 ----
@@ -237,27 +260,44 @@
     }
   }
 
-  function showResult(payload, duplicate) {
+  function showResult(payload, duplicate, kind) {
     ensureHost();
     clearLayer();
     const c = document.createElement("div");
     c.className = "card";
     const esc = (s) =>
       String(s || "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
-    c.innerHTML = `
-      <div class="top">
-        <span class="word">${esc(payload.word)}</span>
-        ${payload.partOfSpeech ? `<span class="pos">${esc(payload.partOfSpeech)}</span>` : ""}
-        <button class="close" title="關閉">✕</button>
-      </div>
-      <div class="trans">${esc(payload.translation)}</div>
-      ${
-        payload.exampleEN
-          ? `<div class="ex"><div class="en">${esc(payload.exampleEN)}</div><div class="zh">${esc(payload.exampleZH)}</div></div>`
-          : ""
-      }
-      ${duplicate ? `<span class="tag">已在單字庫中</span>` : `<span class="tag">已加入單字庫</span>`}
-    `;
+
+    if (kind === "sentence") {
+      c.innerHTML = `
+        <div class="top">
+          <span class="word">句子已收錄</span>
+          <button class="close" title="關閉">✕</button>
+        </div>
+        <div class="trans">${esc(payload.zh)}</div>
+        <div class="ex">
+          <div class="en">${esc(payload.en)}<button class="speak" title="朗讀">🔊</button></div>
+        </div>
+        ${duplicate ? `<span class="tag">已在句子島中</span>` : `<span class="tag">已加入句子島</span>`}
+      `;
+      const sp = c.querySelector(".speak");
+      if (sp) sp.addEventListener("click", () => speakEN(payload.en));
+    } else {
+      c.innerHTML = `
+        <div class="top">
+          <span class="word">${esc(payload.word)}</span>
+          ${payload.partOfSpeech ? `<span class="pos">${esc(payload.partOfSpeech)}</span>` : ""}
+          <button class="close" title="關閉">✕</button>
+        </div>
+        <div class="trans">${esc(payload.translation)}</div>
+        ${
+          payload.exampleEN
+            ? `<div class="ex"><div class="en">${esc(payload.exampleEN)}</div><div class="zh">${esc(payload.exampleZH)}</div></div>`
+            : ""
+        }
+        ${duplicate ? `<span class="tag">已在單字庫中</span>` : `<span class="tag">已加入單字庫</span>`}
+      `;
+    }
     c.querySelector(".close").addEventListener("click", removeHost);
     placeNear(c, anchorRect);
     bindOutsideClose();
@@ -282,7 +322,7 @@
     if (message?.type === "OCR_STATUS") {
       showToast(message.message, false, null);
     } else if (message?.type === "OCR_RESULT") {
-      showResult(message.payload, message.duplicate);
+      showResult(message.payload, message.duplicate, message.kind);
     } else if (message?.type === "OCR_ERROR") {
       showToast(message.message, true, null);
     }
