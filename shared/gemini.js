@@ -13,6 +13,23 @@ const RESPONSE_SCHEMA = {
     translation: { type: "STRING", description: "該字的目標語言釋義（可含多個常見意思）" },
     exampleEN: { type: "STRING", description: "一句生活常用的英文例句，使用到該單字" },
     exampleZH: { type: "STRING", description: "英文例句對應的自然目標語言翻譯" },
+    register: {
+      type: "STRING",
+      description: "該單字的語域，只能是「正式」「口語」「中性」三者之一",
+    },
+    synonyms: {
+      type: "ARRAY",
+      description: "3–5 個相似詞，需涵蓋不同語域",
+      items: {
+        type: "OBJECT",
+        properties: {
+          word: { type: "STRING", description: "相似的英文字或片語" },
+          register: { type: "STRING", description: "該相似詞的語域：「正式」「口語」「中性」之一" },
+          meaning: { type: "STRING", description: "該相似詞的簡短目標語言意思" },
+        },
+        required: ["word", "register", "meaning"],
+      },
+    },
   },
   required: ["word", "partOfSpeech", "translation", "exampleEN", "exampleZH"],
 };
@@ -25,6 +42,10 @@ function buildPrompt(word, targetLang) {
     `3. translation：以${targetLang}說明此字的常見意思，簡潔即可。`,
     `4. exampleEN：一句「日常生活常用」、自然口語的英文例句，必須包含此單字。`,
     `5. exampleZH：exampleEN 的${targetLang}翻譯，要通順自然。`,
+    `6. register：判斷此字偏正式還是口語，只能填「正式」「口語」「中性」三者之一。`,
+    `7. synonyms：列出 3–5 個相似詞，每個附上其語域（register，同樣三選一）與簡短${targetLang}意思（meaning）。`,
+    `   需涵蓋不同語域：若主字偏正式，至少給一個較口語的替代字；若主字偏口語，至少給一個較正式的替代字。`,
+    `   例如 demonstrate（正式）→ show（口語）。`,
     `請務必只輸出 JSON。`,
   ].join("\n");
 }
@@ -89,6 +110,16 @@ export async function fetchWordInfo(word, settings) {
     translation: parsed.translation || "",
     exampleEN: parsed.exampleEN || "",
     exampleZH: parsed.exampleZH || "",
+    register: parsed.register || "",
+    synonyms: Array.isArray(parsed.synonyms)
+      ? parsed.synonyms
+          .filter((s) => s && s.word)
+          .map((s) => ({
+            word: String(s.word || "").trim(),
+            register: String(s.register || "").trim(),
+            meaning: String(s.meaning || "").trim(),
+          }))
+      : [],
   };
 }
 

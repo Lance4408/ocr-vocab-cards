@@ -67,7 +67,7 @@ export async function findWord(word) {
 }
 
 // 新增一張單字卡；若同字已存在則不重複新增，直接回傳既有資料。
-// entry: { word, translation, partOfSpeech, exampleEN, exampleZH }
+// entry: { word, translation, partOfSpeech, exampleEN, exampleZH, register, synonyms }
 export async function addWord(entry) {
   const list = (await storageGet(WORDS_KEY)) || [];
   const key = normalize(entry.word);
@@ -82,6 +82,8 @@ export async function addWord(entry) {
     partOfSpeech: entry.partOfSpeech || "",
     exampleEN: entry.exampleEN || "",
     exampleZH: entry.exampleZH || "",
+    register: entry.register || "",
+    synonyms: Array.isArray(entry.synonyms) ? entry.synonyms : [],
     pinned: false,
     createdAt: Date.now(),
   };

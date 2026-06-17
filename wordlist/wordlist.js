@@ -31,12 +31,28 @@ function fmtDate(ts) {
   }
 }
 
+// 相似詞區塊：有資料才渲染，每列為「字＋語域小標＋中文」。
+function synonymsHtml(syns) {
+  if (!Array.isArray(syns) || syns.length === 0) return "";
+  const items = syns
+    .filter((s) => s && s.word)
+    .map(
+      (s) =>
+        `<div class="syn-item"><span class="sw">${esc(s.word)}</span>${
+          s.register ? `<span class="sr">${esc(s.register)}</span>` : ""
+        }<span class="sm">${esc(s.meaning)}</span></div>`
+    )
+    .join("");
+  return items ? `<div class="syn"><div class="syn-title">相似詞</div>${items}</div>` : "";
+}
+
 function cardHtml(w) {
   return `
     <article class="wcard ${w.pinned ? "pinned" : ""}" data-id="${esc(w.id)}">
       <div class="head">
         <span class="word">${esc(w.word)}</span>
         ${w.partOfSpeech ? `<span class="pos">${esc(w.partOfSpeech)}</span>` : ""}
+        ${w.register ? `<span class="reg">${esc(w.register)}</span>` : ""}
       </div>
       <p class="trans">${esc(w.translation)}</p>
       ${
@@ -47,6 +63,7 @@ function cardHtml(w) {
              </div>`
           : ""
       }
+      ${synonymsHtml(w.synonyms)}
       <div class="foot">
         <span class="date">${fmtDate(w.createdAt)}</span>
         <button class="act pin ${w.pinned ? "on" : ""}" data-act="pin" data-id="${esc(w.id)}">
@@ -64,7 +81,9 @@ function applyFilter(list) {
   return list.filter(
     (w) =>
       (w.word || "").toLowerCase().includes(k) ||
-      (w.translation || "").toLowerCase().includes(k)
+      (w.translation || "").toLowerCase().includes(k) ||
+      (Array.isArray(w.synonyms) &&
+        w.synonyms.some((s) => (s.word || "").toLowerCase().includes(k)))
   );
 }
 

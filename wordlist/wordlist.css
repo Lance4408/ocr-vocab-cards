@@ -107,7 +107,26 @@ body {
   background: #eff6ff; padding: 2px 9px; border-radius: 999px;
   align-self: center; white-space: nowrap;
 }
+.wcard .reg {
+  font-size: 12px; color: #9333ea;
+  background: #faf5ff; padding: 2px 9px; border-radius: 999px;
+  align-self: center; white-space: nowrap;
+}
 .wcard .trans { margin: 8px 0 0; font-size: 15px; color: #1e293b; }
+
+.wcard .syn {
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px dashed var(--line);
+  font-size: 13.5px;
+}
+.wcard .syn .syn-title { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.wcard .syn .syn-item { margin-top: 4px; color: #334155; }
+.wcard .syn .syn-item .sw { font-weight: 600; }
+.wcard .syn .syn-item .sr {
+  font-size: 11px; color: #9333ea; background: #faf5ff;
+  padding: 1px 7px; border-radius: 999px; margin: 0 5px;
+}
+.wcard .syn .syn-item .sm { color: var(--muted); }
 
 .wcard .ex {
   margin-top: 12px; padding-top: 12px;

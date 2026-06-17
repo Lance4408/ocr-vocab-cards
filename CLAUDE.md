@@ -52,8 +52,12 @@ Manifest V3 Chrome 擴充功能：在任何畫面（含圖片/影片/PDF 等不�
 
 ## 資料模型（`chrome.storage.local`，封裝於 `shared/storage.js`）
 
-- `words`：`{ id, word, translation, partOfSpeech, exampleEN, exampleZH, pinned, createdAt }[]`。`getWords()` 排序規則 = **置頂優先，再依 `createdAt` 由新到舊**；去重以 word 轉小寫比對。
-- `settings`：`{ geminiApiKey, model, targetLang }`，含 `DEFAULT_SETTINGS`（預設模型 `gemini-2.0-flash`、目標語言繁體中文）。
+- `words`：`{ id, word, translation, partOfSpeech, exampleEN, exampleZH, register, synonyms, pinned, pinnedAt, createdAt, srs }[]`。`getWords()` 排序規則 = **置頂優先，再依 `createdAt` 由新到舊**；去重以 word 轉小寫比對。
+  - `register`：主單字語域（`"正式"` / `"口語"` / `"中性"`）；`synonyms`：相似詞 `{ word, register, meaning }[]`。兩者皆 Gemini 產生、可空；舊資料無此欄位時各卡片條件式略過不顯示。
+- `sentences`：句子島資料 `{ id, zh, en, source, note, srs, pinned, pinnedAt, createdAt }[]`，去重以 en 轉小寫比對。
+- `activity`：學習活動 `{ startDate, days: { 'YYYY-MM-DD': { reviews, right } } }`，供儀表板算 streak / 6 週進度。
+- `srs`（單字與句子共用子物件）：`{ box, wrong, lastResult, lastReviewed, dueAt }`，Leitner 間隔複習用；讀取時惰性補預設，不寫回。
+- `settings`：`{ geminiApiKey, model, targetLang, ttsRate, ttsVoice, practiceSource }`，含 `DEFAULT_SETTINGS`（預設模型 `gemini-2.0-flash`、目標語言繁體中文）。
 
 ## Gemini 整合（`shared/gemini.js`）
 

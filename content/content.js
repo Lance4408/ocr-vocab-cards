@@ -70,6 +70,19 @@
         .card .ex { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
         .card .ex .en { color: #334155; }
         .card .ex .zh { color: #64748b; margin-top: 2px; }
+        .card .reg {
+          font-size: 12px; color: #9333ea; background: #faf5ff;
+          padding: 1px 8px; border-radius: 999px;
+        }
+        .card .syn { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+        .card .syn .syn-title { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+        .card .syn .syn-item { font-size: 14px; color: #334155; margin-top: 3px; }
+        .card .syn .syn-item .sw { font-weight: 600; }
+        .card .syn .syn-item .sr {
+          font-size: 11px; color: #9333ea; background: #faf5ff;
+          padding: 0 6px; border-radius: 999px; margin: 0 4px;
+        }
+        .card .syn .syn-item .sm { color: #64748b; }
         .card .tag {
           display: inline-block; margin-top: 10px; font-size: 11px;
           color: #16a34a; background: #f0fdf4; padding: 1px 8px; border-radius: 999px;
@@ -268,6 +281,21 @@
     const esc = (s) =>
       String(s || "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
 
+    // 相似詞區塊：有資料才渲染，每列為「字＋語域小標＋中文」。
+    const synonymsHtml = (syns) => {
+      if (!Array.isArray(syns) || syns.length === 0) return "";
+      const items = syns
+        .filter((s) => s && s.word)
+        .map(
+          (s) =>
+            `<div class="syn-item"><span class="sw">${esc(s.word)}</span>${
+              s.register ? `<span class="sr">${esc(s.register)}</span>` : ""
+            }<span class="sm">${esc(s.meaning)}</span></div>`
+        )
+        .join("");
+      return items ? `<div class="syn"><div class="syn-title">相似詞</div>${items}</div>` : "";
+    };
+
     if (kind === "sentence") {
       c.innerHTML = `
         <div class="top">
@@ -287,6 +315,7 @@
         <div class="top">
           <span class="word">${esc(payload.word)}</span>
           ${payload.partOfSpeech ? `<span class="pos">${esc(payload.partOfSpeech)}</span>` : ""}
+          ${payload.register ? `<span class="reg">${esc(payload.register)}</span>` : ""}
           <button class="close" title="關閉">✕</button>
         </div>
         <div class="trans">${esc(payload.translation)}</div>
@@ -295,6 +324,7 @@
             ? `<div class="ex"><div class="en">${esc(payload.exampleEN)}</div><div class="zh">${esc(payload.exampleZH)}</div></div>`
             : ""
         }
+        ${synonymsHtml(payload.synonyms)}
         ${duplicate ? `<span class="tag">已在單字庫中</span>` : `<span class="tag">已加入單字庫</span>`}
       `;
     }
